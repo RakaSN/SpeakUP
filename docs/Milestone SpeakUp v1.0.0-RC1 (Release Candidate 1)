@@ -1,0 +1,92 @@
+# Implementation Plan — Milestone SpeakUp v1.0.0-RC1 (Release Candidate 1)
+
+Fase ini berfokus pada **stabilisasi, validasi end-to-end, audit keamanan RBAC, dan kesiapan rilis** sebelum memasuki Sprint 3 atau deployment ke lingkungan produksi penuh.
+
+> [!IMPORTANT]
+> **Keputusan Strategis**: Penambahan fitur baru dihentikan sementara. Seluruh fokus dialihkan untuk menyempurnakan kualitas sistem SpeakUp v1.0.0-RC1 guna memastikan keandalan operasional dalam uji coba pilot pengguna nyata (*Admin, BK, Kepala Sekolah, Pelapor*).
+
+---
+
+## 🎯 Target Verification Checklist (RC 1.0)
+
+### 1. End-to-End (E2E) Regression & Business Flow Validation
+- [x] **Alur Tiket Pelapor**: Pembuatan tiket (Anonim vs Publik/Internal) -> Notifikasi `TICKET_CREATED` terkirim -> Tiket tampil di Dashboard Pelapor.
+- [x] **Alur Disposisi BK/Admin**: Penugasan tiket ke petugas (`TICKET_ASSIGNED`) -> Perubahan status tiket -> Notifikasi `TICKET_STATUS_CHANGED` -> Histori penugasan & aktivitas terekam.
+- [x] **Alur Penyelesaian Tiket**: Penutupan tiket -> Evaluasi SLA (`RESOLVED_ON_TIME` vs `RESOLVED_LATE`) -> Timestamp penyelesaian terkunci.
+
+### 2. RBAC & Security Audit
+- [ ] **Audit Server Action**: Memastikan setiap *Server Action* (`ticket.action.ts`, `ticket-manage.action.ts`, `user.action.ts`, `master-data.action.ts`) memeriksa sesi pengguna & permission spesifik.
+- [ ] **Audit Navigasi UI**: Memastikan halaman sensitif (`/dashboard/users`, `/dashboard/master-data`, `/dashboard/reports`) terproteksi jika diakses langsung via URL oleh peran yang tidak berhak.
+
+### 3. Skenario & Pengujian SLA Engine
+- [ ] **SLA On Track**: Tiket baru dibuat dengan `slaHours` priority.
+- [ ] **SLA At Risk**: Tiket dengan sisa waktu <= 4 jam menampilkan badge status `AT_RISK` berwarna kuning/amber.
+- [ ] **SLA Overdue**: Tiket melebihi `targetResolutionAt` menampilkan badge `OVERDUE` berwarna merah & masuk dalam indikator metrik tiket terlambat.
+
+### 4. Uji Performa & Volume Data
+- [ ] **Data Volume Seeding**: Membuat skrip seeder volume data (`volume-seed.ts`) dengan target RC: **100 User, 1.000 Ticket, 5.000 Notification** untuk menguji responsivitas query Prisma & paginasi UI.
+- [ ] **Query Benchmarking**: Memastikan query dashboard & analitik mengeksekusi indekss (`slaStatus`, `targetResolutionAt`, `deletedAt`) tanpa *N+1 query bottleneck*.
+
+### 5. Dokumentasi Operasional, Docker, & Deployment
+- [ ] **Docker Containerization**: Menyediakan `Dockerfile` dan `docker-compose.yml` untuk standardisasi environment staging, CI/CD, dan onboarding.
+- [ ] **Deployment Guide (`docs/15-Deployment-and-Operation-Guide.md`)**: Petunjuk instalasi environment, PostgreSQL, Prisma, Build.
+- [ ] **Release Checklist (`docs/16-release-checklist.md`)**: Daftar periksa staging (migration, seed, build, env, backup, restore, smoke test, rollback). Termasuk **Production Environment Checklist** (`NODE_ENV`, `APP_URL`, `DATABASE_URL`, `AUTH_SECRET`, dsb.).
+- [ ] **Security Checklist (`docs/17-security-checklist.md`)**: Panduan audit keamanan (Auth, Session, Input Validation, Upload, Audit Log).
+
+### 6. Smoke Test & Rollback Drill (Staging Environment)
+- [ ] **Smoke Test**: Menguji alur kritis 100% jalan: Login -> Cek Dashboard -> Create Ticket -> Assign Ticket -> Resolve Ticket -> Cek Notification -> Akses Analytics -> Lakukan Export.
+- [ ] **Rollback Verification Drill**: Mensimulasikan secara nyata prosedur: *Migration -> Backup -> Deploy -> Smoke Test -> Rollback (Simulasi Gagal) -> Restore Verification*.
+
+### 7. Pilot Deployment & Feedback
+- [ ] Menyusun **Pilot Feedback Form** (Mengevaluasi: Kemudahan, Kecepatan, Kejelasan Notifikasi, Workflow Tiket, dan Bug/Kendala) untuk membedakan perbaikan minor vs. bloker rilis produksi.
+
+---
+
+## 📋 Open Questions & Review Needed
+
+*All open questions regarding Data Volume and Docker have been answered and integrated into the plan.*
+
+---
+
+## Proposed Technical Changes
+
+### [Component: Testing & Seeding]
+#### [NEW] [volume-seed.ts](file:///C:/DIGITALISASI/speakup/prisma/volume-seed.ts)
+Skrip seeder untuk menghasilkan **100 User, 1.000 Ticket, dan 5.000 Notification** guna memverifikasi paginasi, pencarian, dan performa query dashboard.
+
+### [Component: Docker Infrastructure]
+#### [NEW] [Dockerfile](file:///C:/DIGITALISASI/speakup/Dockerfile) & [docker-compose.yml](file:///C:/DIGITALISASI/speakup/docker-compose.yml)
+Konfigurasi containerization untuk staging, database lokal, dan production build.
+
+### [Component: Documentation]
+#### [NEW] [15-Deployment-and-Operation-Guide.md](file:///C:/DIGITALISASI/speakup/docs/15-Deployment-and-Operation-Guide.md)
+Panduan resmi instalasi, migrasi database, operasi, serta prosedur **Backup & Restore**.
+#### [NEW] [16-release-checklist.md](file:///C:/DIGITALISASI/speakup/docs/16-release-checklist.md)
+Checklist eksekusi rilis termasuk tahapan migrasi, smoke test, mitigasi rollback, dan validasi *Production Environment Variables*.
+#### [NEW] [17-security-checklist.md](file:///C:/DIGITALISASI/speakup/docs/17-security-checklist.md)
+Checklist keamanan komprehensif (Authentication, Authorization, Session, Input Validation, Rate Limiting, Audit Log).
+#### [NEW] [pilot-feedback-form.md](file:///C:/DIGITALISASI/speakup/docs/pilot-feedback-form.md)
+Draft kuesioner evaluasi untuk pengguna uji coba (Admin, BK, Kepsek, Pelapor).
+
+---
+
+## Exit Criteria RC 1.0 (Definition of Done)
+
+### 1. Functional
+- [ ] Semua alur bisnis utama lulus pengujian (End-to-End).
+- [ ] RBAC tervalidasi sesuai matriks hak akses.
+- [ ] SLA tervalidasi, termasuk skenario *freeze* dan tenggat waktu.
+
+### 2. Technical
+- [ ] Tidak ada error *runtime* yang diketahui.
+- [ ] Tidak ada query **N+1** pada dashboard utama.
+- [ ] Semua migrasi (`prisma migrate dev`/`deploy`) dapat dijalankan mulus dari database kosong.
+- [ ] Simulasi **Rollback Verification** diuji sukses minimal 1x di *Staging*.
+
+### 3. Operational
+- [ ] *Deployment Guide* tersedia dan divalidasi.
+- [ ] Docker tersedia (minimal untuk *development/staging*).
+- [ ] Prosedur **Backup & restore** terdokumentasi dan teruji nyata.
+- [ ] *Smoke test* di *staging* lulus.
+- [ ] *Security Checklist* (`17-security-checklist.md`) terverifikasi.
+- [ ] Form / Panduan *Pilot Feedback* disiapkan.

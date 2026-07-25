@@ -1,0 +1,107 @@
+# Sprint 0 — Walkthrough (Completed ✅)
+
+## Ringkasan
+
+Sprint 0 (Project Foundation) telah selesai sepenuhnya. Seluruh fondasi arsitektur SpeakUp telah dibangun, diuji, dan siap menerima fitur bisnis di Sprint 1.
+
+---
+
+## Struktur Proyek Final
+
+```
+c:\DIGITALISASI\speakup\
+├── prisma/
+│   ├── schema.prisma              ← Full RBAC + Master Data + Ticket schema
+│   └── migrations/
+│       ├── 001_initial/
+│       ├── 002_rbac_and_indexes/
+│       └── 003_schema_refinements/
+├── prisma.config.ts               ← Prisma v7 config (Driver Adapter)
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx             ← Root Layout + ThemeProvider + SEO
+│   │   ├── page.tsx               ← Landing placeholder
+│   │   ├── globals.css            ← shadcn/ui design tokens (dark/light)
+│   │   └── api/
+│   │       ├── health/route.ts    ← Health Check endpoint
+│   │       └── auth/[...nextauth]/route.ts
+│   ├── components/
+│   │   ├── theme-provider.tsx     ← Dark Mode (next-themes)
+│   │   └── ui/button.tsx          ← shadcn Button component
+│   ├── config/
+│   │   ├── index.ts               ← Central config exporter
+│   │   ├── app.ts, auth.ts, database.ts, storage.ts
+│   ├── features/
+│   │   ├── auth/server/
+│   │   │   ├── auth.ts            ← NextAuth v5 (Credentials)
+│   │   │   ├── authorize.ts       ← authorize("ticket.create")
+│   │   │   └── permission.service.ts ← RBAC via database
+│   │   └── tickets/server/
+│   │       └── ticket-number.service.ts ← SU-YYYYMM-NNNNN
+│   ├── middleware.ts              ← Session-based route protection
+│   ├── shared/
+│   │   ├── events/
+│   │   │   ├── domain-events.ts   ← DomainEvent union type
+│   │   │   └── event-bus.ts       ← Lightweight EventBus
+│   │   ├── lib/
+│   │   │   ├── errors.ts          ← ERROR_CODES catalog + AppError
+│   │   │   └── response.ts        ← ResponseFormatter + Pagination types
+│   │   └── server/
+│   │       ├── db.ts              ← Prisma Client + Transaction Wrapper
+│   │       ├── container/index.ts ← Service Container (DI)
+│   │       └── logger/
+│   │           ├── app.logger.ts
+│   │           ├── audit.logger.ts
+│   │           └── request.logger.ts
+├── .env / .env.example
+├── .prettierrc
+└── vitest.config.ts
+```
+
+---
+
+## Keputusan Arsitektur Kunci
+
+| Keputusan | Detail |
+|---|---|
+| **RBAC** | Berbasis tabel (`roles`, `permissions`, `role_permissions`, `user_roles`), bukan enum |
+| **Database PK** | UUID v4 (`@default(uuid())`) — stabil untuk MVP |
+| **Schema** | Single-file `schema.prisma` — modularisasi ditunda |
+| **Prisma v7** | Menggunakan Driver Adapter (`@prisma/adapter-pg`) |
+| **Auth** | Credentials Provider (Email/Password) dengan bcrypt |
+| **Middleware** | Session-check saja di Edge; RBAC mendalam via `authorize()` di Server Action |
+| **No Repository** | Route → Service → Prisma (langsung) |
+| **Soft Delete** | `deletedAt` pada User, Ticket, dan Master Data |
+
+---
+
+## Hasil Pengujian
+
+```
+ ✓ src/shared/lib/__tests__/errors.test.ts          (4 tests)
+ ✓ src/shared/server/logger/__tests__/loggers.test.ts (7 tests)
+ ✓ src/features/tickets/server/__tests__/ticket-number.test.ts (4 tests)
+
+ Test Files  3 passed (3)
+      Tests  15 passed (15)
+```
+
+---
+
+## Endpoint Tersedia
+
+| Method | Path | Fungsi |
+|---|---|---|
+| `GET` | `/api/health` | Health check (database + version) |
+| `GET/POST` | `/api/auth/*` | NextAuth endpoints |
+
+---
+
+## Langkah Selanjutnya → Sprint 1
+
+Sprint 1 akan membangun fitur-fitur bisnis pertama di atas fondasi ini:
+- **Seed Data** (Roles, Permissions, Master Data, User default)
+- **Halaman Login** (UI)
+- **Dashboard** (Layout sidebar + overview)
+- **CRUD Tiket** (Create, Read, List + Pagination)
+- **Disposisi / Assignment**

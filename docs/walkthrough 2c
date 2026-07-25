@@ -1,0 +1,35 @@
+# Walkthrough - Sprint 2 (Operational & Enterprise Features)
+
+## Summary of Accomplishments across Sub-Sprints (2A, 2B, 2C)
+
+### 📌 Sprint 2A — User Management & Notification (100% Selesai)
+- **Account Status**: Menambahkan enum `UserStatus` (`ACTIVE`, `INACTIVE`, `LOCKED`).
+- **User Management (`/dashboard/users`)**: CRUD User, Reset Password manual, & Role Assignment (RBAC).
+- **Profil Saya (`/dashboard/profile`)**: Pengelolaan password mandiri.
+- **Pusat Notifikasi (`/dashboard/notifications`)**: Header `NotificationBell` dengan *Unread Counter*, Inbox Notifikasi terfilter (`INFO`, `SUCCESS`, `WARNING`, `ERROR`), & *Mark All Read*.
+- **Rich Audit Logging**: Integrasi `AuditService` untuk mencatat `entity`, `entityId`, `oldValue`, `newValue`, `ipAddress`, dan `userAgent`.
+
+---
+
+### 📌 Sprint 2B — Master Data, Analytics, & Export (100% Selesai)
+- **Master Data Protection (`/dashboard/master-data`)**: Aturan ketat melarang *hard-delete* jika data master (Kategori/Prioritas/Jenis/Status) masih direferensikan oleh tiket aktif (otomatis dialihkan ke `isActive = false`).
+- **Analytics Service Terpisah (`/dashboard/analytics`)**: Modul `AnalyticsService` murni terisolasi dari `TicketService` untuk agregasi data metrik, tren 6 bulanan, dan distribusi status/kategori.
+- **Excel Export Engine (`/dashboard/reports`)**: `ReportService` & Route Handler `/api/reports/export` dengan streaming CSV berformat UTF-8 BOM yang langsung terbuka rapi di Microsoft Excel.
+
+---
+
+### 📌 Sprint 2C — SLA Engine & Role-Based Dashboard Strategy (100% Selesai)
+- **SLA Engine & Freeze**:
+  - `MasterTicketPriority` memiliki field `slaHours` (default 24 jam).
+  - Saat tiket disubmit, `TicketService` menyalin `slaHours` (SLA Freeze) dan mengalkulasi timestamp `targetResolutionAt`.
+  - Saat tiket diselesaikan, `TicketService` mengevaluasi ketepatan waktu (`RESOLVED_ON_TIME` atau `RESOLVED_LATE`) serta memublikasikan event domain SLA.
+  - [SlaBadge](file:///c:/DIGITALISASI/speakup/src/features/sla/components/sla-badge.tsx) & [SlaService](file:///c:/DIGITALISASI/speakup/src/features/sla/server/sla.service.ts) menghitung sisa waktu & status SLA berdasarkan sumber waktu server terpusat.
+- **Role-Based Dashboard Strategy Pattern**:
+  - `DashboardService` mengimplementasikan Strategy Pattern (`AdminDashboardStrategy`, `BKDashboardStrategy`, `ReporterDashboardStrategy`) untuk menyajikan widget metrik & daftar tiket spesifik peran tanpa percabangan if/else rumit di UI.
+
+---
+
+## Technical Verification
+
+- **Build Check**: Seluruh kode terkompilasi bersih tanpa *type error* atau *lint warning*.
+- **Prisma Schema**: Berhasil di-sync ke database PostgreSQL.

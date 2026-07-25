@@ -1,0 +1,13 @@
+# Tasks - Sprint 2C (SLA Engine & Role-Based Dashboard) — 100% SELESAI
+
+- `[x]` **Task 2C.1 — SLA Engine Schema & Logic**
+  - `[x]` Update `prisma/schema.prisma` with `slaHours` on `MasterTicketPriority`, and `slaHours`, `targetResolutionAt`, `SlaStatus` enum on `Ticket`.
+  - `[x]` Sync DB schema via `npx prisma db push`.
+  - `[x]` Implement SLA Freeze & Calculation in `TicketService` (`createTicket`, `resolveTicket`).
+  - `[x]` Add SLA Domain Events (`SLA_THRESHOLD_REACHED`, `SLA_OVERDUE`, `TICKET_RESOLVED_ON_TIME`, `TICKET_RESOLVED_LATE`).
+- `[x]` **Task 2C.2 — Dashboard Strategy Pattern**
+  - `[x]` Create Dashboard Strategies (`AdminDashboardStrategy`, `BKDashboardStrategy`, `ReporterDashboardStrategy`).
+  - `[x]` Build `DashboardService` orchestrator using Strategy Pattern.
+- `[x]` **Task 2C.3 — Dashboard UI & SLA Indicators**
+  - `[x]` Build `SlaBadge` indicator component based on `SlaService.calculateSlaState()`.
+  - `[x]` Update `/dashboard/page.tsx` to render role-specific widgets and SLA badges.
