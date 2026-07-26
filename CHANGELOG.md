@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.0.1] - 2026-07-26
+### Fixed
+| Issue | Type | Deskripsi |
+|---|---|---|
+| Laporan CSV | Bug Fix | Memperbaiki format tanggal menjadi `id-ID` (WIB) pada kolom ekspor CSV |
+| Tooltip SLA | UI Fix | Menambahkan tooltip tanggal/waktu spesifik pada SLA badge |
+| Mobile Border | UI Fix | Menyesuaikan *border color* untuk tampilan layar kecil (*mobile viewport*) |
+| Safari Font | Compatibility | Menambahkan penyesuaian `-webkit-font-smoothing` agar konsisten di Safari |
+
+
 ## [v1.0.0-RC1] - 2026-07-26
 ### Added
 - **Authentication**: JWT-based session management using Auth.js (NextAuth v5).

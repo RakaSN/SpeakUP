@@ -1,0 +1,121 @@
+# Pivot Strategy & Implementation Plan: Product Readiness & UI/UX Transformation (Sprint 5A - 5E)
+
+## Executive Summary & Strategic Decision
+
+**Keputusan Strategis**: **AI Feature Freeze (Maintenance Mode)**. 
+Seluruh fitur AI utama SpeakUp (Classification, Summarization, Trend Analysis, Risk Prediction, Capability Registry, Model Evaluation, Governance, Human-in-the-Loop) telah rampung di **Sprint 4C (APPROVED)**.
+
+Sesuai arahan dan analisis produk, pengembangan capability AI baru (termasuk Sprint 4A AIOps) **ditunda sementara waktu**. Fokus utama proyek sekarang dialihkan secara 100% untuk merubah SpeakUp dari sebuah *Developer Project* menjadi **Real Enterprise Product** yang siap pakai, indah, responsif, aman, dan dapat digunakan secara efisien oleh Guru, BK, Kepala Sekolah, Siswa, serta Masyarakat Umum.
+
+---
+
+## Revised Roadmap Comparison
+
+```mermaid
+graph TD
+    subgraph SPRINT_4_DONE ["Completed AI Foundation (Sprint 4C ✅)"]
+        S4C["Sprint 4C: Model Evaluation & Metrics (APPROVED)"]
+    end
+
+    subgraph PAUSED ["AI Capabilities Paused ⏸️"]
+        S4A["Sprint 4A: AIOps & Cost Monitoring"]
+        S4D["Sprint 4D: Insight Center"]
+        S4E["Sprint 4E: Schema Evolution"]
+    end
+
+    subgraph NEW_ROADMAP ["New Focus: Product Readiness (Sprint 5) 🚀"]
+        S5A["Sprint 5A: UI/UX Redesign & Design System 🎨"]
+        S5B["Sprint 5B: Frictionless Ticket Flow & End-User Experience 👥"]
+        S5C["Sprint 5C: Security Hardening & Admin Experience 🔐"]
+        S5D["Sprint 5D: Performance & RSC Optimization ⚡"]
+        S5E["Sprint 5E: Production Readiness & Release v1.0 🚀"]
+    end
+
+    S4C --> S5A
+    S5A --> S5B
+    S5B --> S5C
+    S5C --> S5D
+    S5D --> S5E
+```
+
+---
+
+## Phase Plan Breakdown
+
+### 🎨 Phase 1 / Sprint 5A: UI/UX Redesign & Design System (Mulai Sekarang)
+**Tujuan**: Mengubah tampilan SpeakUp agar terasa premium, modern, dan ramah pengguna non-teknis.
+
+1. **Design System & Visual Tokens**:
+   * Memperbaiki skema warna (Primary Palette, Subtle Dark Mode, Glassmorphism, Radii).
+   * Typographic Hierarchy modern (Inter / Outfit Google Fonts via Next Fonts).
+   * Micro-animations (Smooth transitions, state changes).
+2. **Core Reusable Components**:
+   * Loading Skeletons untuk semua tabel dan card.
+   * State Components: Empty States dengan ilustrasi, Friendly Error States.
+   * Toast Notifications System & Floating Badges.
+   * Component variants (Buttons, Modals, Dropdowns, Cards, Badges).
+3. **Primary Page Revamps**:
+   * **Landing Page**: Public hero section, anonymous tracking entry, feature highlights.
+   * **Login / Auth Pages**: Clean enterprise branding.
+   * **Dashboard**: Modern executive summary for Admin, BK, Headmaster.
+   * **Ticket List & Detail View**: Visual clarity for SLA status, AI insights, comment timelines.
+
+---
+
+### 👥 Phase 2 / Sprint 5B: End-User & Mobile Experience
+**Tujuan**: Memastikan alur pengaduan tanpa hambatan (*frictionless*) di semua perangkat (terutama mobile web untuk siswa & guru).
+
+1. **Streamlined Ticket Flow**:
+   * Pengajuan tiket interaktif dengan min-step form / wizard.
+   * Upload lampiran langsung dari kamera / gallery perangkat.
+   * Quick Disposition & 1-Click Action for BK/Admin.
+2. **Mobile First Responsive Polish**:
+   * Touch-friendly controls & swipe actions.
+   * Bottom sheet navigation untuk mobile.
+3. **Public Reporting & Tracking**:
+   * Pelaporan anonim dengan token unik.
+   * Halaman tracking status publik yang informatif.
+
+---
+
+### 🔐 Phase 3 / Sprint 5C: Security Hardening & Admin Experience
+1. **Security**: Rate limiting, CSRF, input sanitization, file upload type validation.
+2. **Admin Experience**: Saved filters, bulk status update, quick keyboard shortcuts, CSV/PDF Export.
+
+---
+
+### ⚡ Phase 4 / Sprint 5D: Performance & RSC Optimization
+1. Dynamic imports & route lazy loading.
+2. Caching layer optimization & database query index tuning.
+3. Image optimization & asset compression.
+
+---
+
+### 🚀 Phase 5 / Sprint 5E: Production Readiness & Release v1.0
+1. Environment configuration & health checks.
+2. Production build verification.
+3. Final User Acceptance Testing (UAT).
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Strategi AI Maintenance Mode**:
+> Selama Sprint 5A - 5E, kode AI yang ada di `src/shared/server/ai` tetap aktif melayani sistem (Classification, Summarization, Risk Prediction), namun tidak ada penambahan fitur AI baru sampai versi v1.0 siap dirilis.
+
+> [!NOTE]
+> **Langkah Pengerjaan Pertama**:
+> Kita akan segera memulai **Sprint 5A (UI/UX Redesign & Design System)** dengan menyusun token CSS, typography font, reusable UI primitives (Skeleton, Empty State, Toast, Card, Modal), serta memoles Landing Page dan Dashboard.
+
+---
+
+## Verification Plan
+
+### Automated Verification
+- `npm run build`: Memastikan produksi Next.js build sukses tanpa kesalahan TypeScript/JSX.
+- `npm run lint`: Memastikan kebersihan dan konsistensi kode UI.
+
+### Manual Verification
+- Visual inspection tampilan responsive di desktop (1920x1080) & mobile (375x812).
+- Memeriksa kelancaran animasi, empty states, loading state, dan dark/light mode transition.

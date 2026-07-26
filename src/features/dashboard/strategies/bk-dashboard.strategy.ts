@@ -10,28 +10,41 @@ export class BKDashboardStrategy implements IDashboardStrategy {
       },
     };
 
-    const total = await db.ticket.count({ where: assignedWhere });
-    const resolved = await db.ticket.count({
-      where: { ...assignedWhere, status: { name: { in: ['Resolved', 'Closed'] } } },
-    });
-    const pending = await db.ticket.count({
-      where: { ...assignedWhere, status: { name: { in: ['Submitted', 'Assigned', 'In Progress'] } } },
-    });
-    const overdue = await db.ticket.count({
-      where: { ...assignedWhere, slaStatus: 'OVERDUE' },
-    });
-
-    const recentTickets = await db.ticket.findMany({
-      where: assignedWhere,
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: { status: true, priority: true, reporter: { select: { name: true } } },
-    });
+    // Execute queries in parallel
+    const [total, resolved, pending, overdue, recentTickets] = await Promise.all([
+      db.ticket.count({ where: assignedWhere }),
+      db.ticket.count({
+        where: { ...assignedWhere, status: { name: { in: ['Resolved', 'Closed'] } } },
+      }),
+      db.ticket.count({
+        where: { ...assignedWhere, status: { name: { in: ['Submitted', 'Assigned', 'In Progress'] } } },
+      }),
+      db.ticket.count({
+        where: { ...assignedWhere, slaStatus: 'OVERDUE' },
+      }),
+      db.ticket.findMany({
+        where: assignedWhere,
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          ticketNumber: true,
+          title: true,
+          createdAt: true,
+          resolvedAt: true,
+          targetResolutionAt: true,
+          slaStatus: true,
+          status: { select: { name: true } },
+          priority: { select: { name: true } },
+          reporter: { select: { name: true } },
+        },
+      }),
+    ]);
 
     return {
       roleName: 'Petugas BK / Guru',
       metrics: { total, resolved, pending, overdue },
-      recentTickets,
+      recentTickets: recentTickets as unknown as DashboardData['recentTickets'],
     };
   }
 }

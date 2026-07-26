@@ -78,7 +78,7 @@ export const ReportService = {
       `"${t.priority.name}"`,
       `"${t.status.name}"`,
       `"${t.isAnonymous ? 'Ya' : 'Tidak'}"`,
-      `"${new Date(t.createdAt).toLocaleString('id-ID')}"`,
+      `"${new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', timeZoneName: 'short' }).format(new Date(t.createdAt))}"`,
     ]);
 
     const csvContent = [headers.join(','), ...rows.map((r: string[]) => r.join(','))].join('\n');

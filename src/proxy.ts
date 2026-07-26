@@ -2,13 +2,10 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * Middleware ringan tanpa import NextAuth/Prisma/bcrypt.
- * Edge Runtime tidak mendukung modul Node.js native seperti node:util/types.
- * 
- * Middleware ini hanya melakukan redirect sederhana berdasarkan keberadaan session token.
- * Pengecekan autentikasi mendalam dilakukan di Server Components/Actions via auth().
+ * Proxy (Next.js 16 file convention).
+ * Melakukan redirect ringan berbasis session token cookie.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const sessionToken = request.cookies.get('authjs.session-token') || request.cookies.get('__Secure-authjs.session-token');
   const isLoggedIn = !!sessionToken;
   const { pathname } = request.nextUrl;

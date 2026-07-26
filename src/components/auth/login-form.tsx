@@ -2,6 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { loginAction } from '@/features/auth/server/login.action';
+import { Button, Input, ErrorState } from '@/components/ui';
+import { Mail, Lock, LogIn } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
@@ -14,12 +17,16 @@ export function LoginForm() {
 
     startTransition(async () => {
       try {
+        toast.info('Memverifikasi kredensial...');
         const res = await loginAction(formData);
         if (res && !res.success) {
           setError(res.error || 'Login gagal.');
+          toast.error(res.error || 'Login gagal. Periksa kembali email dan kata sandi Anda.');
+        } else {
+          toast.success('Login berhasil! Mengalihkan ke dashboard...');
         }
       } catch {
-        // Redirect errors from NextAuth handled automatically
+        // NextAuth handle redirect automatically
       }
     });
   };
@@ -27,46 +34,46 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-          {error}
-        </div>
+        <ErrorState
+          title="Login Gagal"
+          message={error}
+          className="p-4 text-xs"
+        />
       )}
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="email">
-          Email
-        </label>
-        <input
+      <div className="space-y-1.5">
+        <Input
           id="email"
           name="email"
           type="email"
+          label="Email Sekolah"
           required
-          placeholder="admin@speakup.id"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          placeholder="guru@speakup.id"
+          className="h-10 text-sm"
         />
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="password">
-          Password
-        </label>
-        <input
+      <div className="space-y-1.5">
+        <Input
           id="password"
           name="password"
           type="password"
+          label="Kata Sandi"
           required
           placeholder="••••••••"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="h-10 text-sm"
         />
       </div>
 
-      <button
+      <Button
         type="submit"
-        disabled={isPending}
-        className="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+        variant="default"
+        isLoading={isPending}
+        className="w-full h-10 text-sm font-semibold shadow-sm mt-2"
       >
-        {isPending ? 'Memproses...' : 'Masuk'}
-      </button>
+        <LogIn className="w-4 h-4 mr-2" />
+        <span>Masuk ke Dashboard</span>
+      </Button>
     </form>
   );
 }

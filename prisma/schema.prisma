@@ -218,6 +218,8 @@ model Ticket {
   assignments  TicketAssignment[]
   activities   TicketActivity[]
   attachments  TicketAttachment[]
+  aiRecommendations AiRecommendation[]
+
 
   @@index([reporterId])
   @@index([typeId])
@@ -332,3 +334,109 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// ==========================================
+// BACKGROUND JOBS & SCHEDULER (Sprint 3B)
+// ==========================================
+
+model JobConfiguration {
+  id             String    @id @default(uuid())
+  jobCode        String    @unique @map("job_code")
+  name           String
+  description    String?   @db.Text
+  isActive       Boolean   @default(true) @map("is_active")
+  cronExpression String?   @map("cron_expression") // e.g. "* * * * *"
+  intervalMs     Int?      @map("interval_ms")     // e.g. 60000 (1 min fallback)
+  lastRunAt      DateTime? @map("last_run_at")
+  nextRunAt      DateTime? @map("next_run_at")
+  lockedAt       DateTime? @map("locked_at")
+  lockedBy       String?   @map("locked_by")
+  heartbeatAt    DateTime? @map("heartbeat_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  logs           JobExecutionLog[]
+
+  @@map("job_configurations")
+}
+
+model JobExecutionLog {
+  id          String   @id @default(uuid())
+  jobCode     String   @map("job_code")
+  status      String   // "SUCCESS", "FAILED"
+  message     String?  @db.Text
+  metadata    Json?
+  durationMs  Int?     @map("duration_ms")
+  startedAt   DateTime @default(now()) @map("started_at")
+  completedAt DateTime @default(now()) @map("completed_at")
+
+  job         JobConfiguration @relation(fields: [jobCode], references: [jobCode], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([jobCode])
+  @@index([status])
+  @@index([startedAt])
+  @@map("job_execution_logs")
+}
+
+// ==========================================
+// AI INTELLIGENCE PLATFORM (Sprint 3C)
+// ==========================================
+
+enum AiCapabilityType {
+  CLASSIFICATION
+  SUMMARIZATION
+  TREND_ANALYSIS
+  RECOMMENDATION
+}
+
+enum AiUserAction {
+  PENDING
+  ACCEPTED
+  REJECTED
+  OVERRIDDEN
+}
+
+model AiRecommendation {
+  id                 String           @id @default(uuid())
+  ticketId           String?          @map("ticket_id")
+  capability         AiCapabilityType
+  modelName          String           @map("model_name")
+  promptVersion      String           @map("prompt_version")
+  confidenceScore    Float            @default(0.0) @map("confidence_score")
+  recommendationData Json             @map("recommendation_data")
+  userAction         AiUserAction     @default(PENDING) @map("user_action")
+  actionReason       String?          @db.Text @map("action_reason")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+
+  ticket             Ticket?          @relation(fields: [ticketId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([ticketId])
+  @@index([capability])
+  @@index([userAction])
+  @@map("ai_recommendations")
+}
+
+enum AiTelemetryStatus {
+  SUCCESS
+  FAILED
+  RATE_LIMITED
+  TIMEOUT
+}
+
+model AiTelemetryLog {
+  id            String            @id @default(uuid())
+  capability    AiCapabilityType?
+  modelName     String            @map("model_name")
+  promptVersion String            @default("v1.0") @map("prompt_version")
+  tokensUsed    Int               @default(0) @map("tokens_used")
+  durationMs    Int               @default(0) @map("duration_ms")
+  estimatedCost Float             @default(0.0) @map("estimated_cost")
+  status        AiTelemetryStatus @default(SUCCESS)
+  errorMessage  String?           @db.Text @map("error_message")
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  @@index([capability])
+  @@index([status])
+  @@index([createdAt])
+  @@map("ai_telemetry_logs")
+}

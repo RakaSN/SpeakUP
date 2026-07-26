@@ -3,6 +3,13 @@ import { NotificationService, type NotificationType } from '@/features/notificat
 import { NotificationItem } from '@/features/notifications/components/notification-item';
 import { markAllAsReadAction } from '@/features/notifications/server/notification.action';
 import Link from 'next/link';
+import {
+  PageHeader,
+  Card,
+  Badge,
+  Button,
+} from '@/components/ui';
+import { CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default async function NotificationsPage({
   searchParams,
@@ -24,82 +31,63 @@ export default async function NotificationsPage({
     isUnreadOnly,
   });
 
-  return (
-    <div className="space-y-6 max-w-4xl py-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Kotak Masuk Notifikasi</h1>
-          <p className="text-sm text-muted-foreground">Pemberitahuan terkini mengenai aktivitas tiket dan sistem Anda.</p>
-        </div>
+  const filterOptions = [
+    { href: '/dashboard/notifications', label: 'Semua', isActive: !type && !isUnreadOnly },
+    { href: '/dashboard/notifications?filter=unread', label: 'Belum Dibaca', isActive: isUnreadOnly },
+    { href: '/dashboard/notifications?type=INFO', label: 'Info', isActive: type === 'INFO' },
+    { href: '/dashboard/notifications?type=SUCCESS', label: 'Sukses', isActive: type === 'SUCCESS' },
+    { href: '/dashboard/notifications?type=WARNING', label: 'Peringatan', isActive: type === 'WARNING' },
+  ];
 
-        <form action={markAllAsReadAction}>
-          <button
-            type="submit"
-            className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-3 py-1 text-xs font-semibold shadow-sm hover:bg-accent hover:text-accent-foreground"
-          >
-            Tandai Semua Dibaca
-          </button>
-        </form>
-      </div>
+  return (
+    <div className="space-y-6 max-w-4xl py-4 animate-fade-in">
+      <PageHeader
+        title="Kotak Masuk Notifikasi"
+        description="Pemberitahuan terkini mengenai aktivitas tiket dan sistem Anda."
+        badge={<Badge variant="info">{meta.totalItems} Notifikasi</Badge>}
+        actions={
+          <form action={markAllAsReadAction}>
+            <Button type="submit" variant="outline" size="sm" className="font-medium">
+              <CheckCheck className="w-4 h-4 mr-1.5" />
+              Tandai Semua Dibaca
+            </Button>
+          </form>
+        }
+      />
 
       {/* Navigasi Filter */}
-      <div className="flex flex-wrap items-center gap-2 text-xs font-medium border-b pb-3">
-        <Link
-          href="/dashboard/notifications"
-          className={`px-3 py-1.5 rounded-full border transition-colors ${
-            !type && !isUnreadOnly ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'
-          }`}
-        >
-          Semua
-        </Link>
-        <Link
-          href="/dashboard/notifications?filter=unread"
-          className={`px-3 py-1.5 rounded-full border transition-colors ${
-            isUnreadOnly ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'
-          }`}
-        >
-          Belum Dibaca
-        </Link>
-        <Link
-          href="/dashboard/notifications?type=INFO"
-          className={`px-3 py-1.5 rounded-full border transition-colors ${
-            type === 'INFO' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'
-          }`}
-        >
-          Info
-        </Link>
-        <Link
-          href="/dashboard/notifications?type=SUCCESS"
-          className={`px-3 py-1.5 rounded-full border transition-colors ${
-            type === 'SUCCESS' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'
-          }`}
-        >
-          Sukses
-        </Link>
-        <Link
-          href="/dashboard/notifications?type=WARNING"
-          className={`px-3 py-1.5 rounded-full border transition-colors ${
-            type === 'WARNING' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'
-          }`}
-        >
-          Peringatan
-        </Link>
+      <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
+        {filterOptions.map((opt) => (
+          <Link
+            key={opt.href}
+            href={opt.href}
+            className={`px-3.5 py-1.5 rounded-full border transition-all duration-150 ${
+              opt.isActive
+                ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                : 'bg-surface hover:bg-accent border-border/80 text-foreground'
+            }`}
+          >
+            {opt.label}
+          </Link>
+        ))}
       </div>
 
       {/* Listing Notifikasi */}
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden divide-y">
+      <Card variant="default" className="overflow-hidden">
         {items.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
+          <div className="p-12 text-center text-sm text-muted-foreground">
             Tidak ada notifikasi yang ditemukan.
           </div>
         ) : (
-          items.map((notification) => (
-            <NotificationItem key={notification.id} notification={notification} />
-          ))
+          <div className="divide-y divide-border/60">
+            {items.map((notification) => (
+              <NotificationItem key={notification.id} notification={notification} />
+            ))}
+          </div>
         )}
-      </div>
+      </Card>
 
-      {/* Pagination sederajat */}
+      {/* Pagination */}
       {meta.totalPages > 1 && (
         <div className="flex items-center justify-between pt-2 text-xs">
           <p className="text-muted-foreground">
@@ -109,17 +97,21 @@ export default async function NotificationsPage({
             {meta.currentPage > 1 && (
               <Link
                 href={`/dashboard/notifications?page=${meta.currentPage - 1}${type ? `&type=${type}` : ''}`}
-                className="px-3 py-1 rounded border bg-background hover:bg-muted"
               >
-                Sebelumnya
+                <Button variant="outline" size="sm" className="font-medium">
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Sebelumnya
+                </Button>
               </Link>
             )}
             {meta.currentPage < meta.totalPages && (
               <Link
                 href={`/dashboard/notifications?page=${meta.currentPage + 1}${type ? `&type=${type}` : ''}`}
-                className="px-3 py-1 rounded border bg-background hover:bg-muted"
               >
-                Berikutnya
+                <Button variant="outline" size="sm" className="font-medium">
+                  Selanjutnya
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
               </Link>
             )}
           </div>

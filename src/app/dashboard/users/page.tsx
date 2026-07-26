@@ -1,5 +1,16 @@
 import { UserService, type UserStatus } from '@/features/users/server/user.service';
 import Link from 'next/link';
+import {
+  PageHeader,
+  Card,
+  CardContent,
+  Badge,
+  Button,
+  Input,
+  Avatar,
+  EmptyState,
+} from '@/components/ui';
+import { Plus, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 export default async function UsersPage({
   searchParams,
@@ -13,131 +24,151 @@ export default async function UsersPage({
 
   const { items, meta } = await UserService.listUsers({ page, limit: 10, search, status });
 
-  const statusBadgeMap = {
-    ACTIVE: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    INACTIVE: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-    LOCKED: 'bg-destructive/10 text-destructive border-destructive/20',
+  const getStatusBadge = (userStatus: UserStatus) => {
+    switch (userStatus) {
+      case 'ACTIVE':
+        return <Badge variant="success">Aktif</Badge>;
+      case 'INACTIVE':
+        return <Badge variant="warning">Nonaktif</Badge>;
+      case 'LOCKED':
+        return <Badge variant="destructive">Terkunci</Badge>;
+      default:
+        return <Badge variant="outline">{userStatus}</Badge>;
+    }
   };
 
   return (
-    <div className="space-y-6 py-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Manajemen Pengguna</h1>
-          <p className="text-sm text-muted-foreground">Kelola pengguna, status akun, dan penugasan peran (RBAC).</p>
-        </div>
-        <Link
-          href="/dashboard/users/create"
-          className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 shrink-0"
-        >
-          + Tambah Pengguna
-        </Link>
-      </div>
+    <div className="space-y-6 py-4 animate-fade-in">
+      <PageHeader
+        title="Manajemen Pengguna & Peran"
+        description="Kelola akun pengajar, pembimbing BK, administrator, dan hak akses pengguna sekolah."
+        badge={<Badge variant="info">Total: {meta.totalItems}</Badge>}
+        actions={
+          <Link href="/dashboard/users/create">
+            <Button variant="default" size="sm" className="font-medium">
+              <Plus className="w-4 h-4 mr-1.5" />
+              Tambah Pengguna Baru
+            </Button>
+          </Link>
+        }
+      />
 
       {/* Filter & Search Bar */}
-      <form method="GET" className="flex flex-col sm:flex-row gap-3">
-        <input
-          type="text"
-          name="search"
-          defaultValue={search}
-          placeholder="Cari nama atau email..."
-          className="flex h-9 w-full sm:w-64 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        />
+      <Card variant="muted" className="p-4">
+        <form method="GET" className="flex flex-col sm:flex-row items-center gap-3">
+          <Input
+            name="search"
+            defaultValue={search}
+            placeholder="Cari nama pengguna atau email..."
+            className="flex-1 bg-surface"
+            leftIcon={<Search className="w-4 h-4" />}
+          />
 
-        <select
-          name="status"
-          defaultValue={status || ''}
-          className="flex h-9 w-full sm:w-40 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        >
-          <option value="">Semua Status</option>
-          <option value="ACTIVE">Aktif (ACTIVE)</option>
-          <option value="INACTIVE">Nonaktif (INACTIVE)</option>
-          <option value="LOCKED">Terkunci (LOCKED)</option>
-        </select>
+          <select
+            name="status"
+            defaultValue={status || ''}
+            className="h-9.5 w-full sm:w-48 rounded-lg border border-input bg-surface px-3 py-1.5 text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+          >
+            <option value="">Semua Status Akun</option>
+            <option value="ACTIVE">Aktif (ACTIVE)</option>
+            <option value="INACTIVE">Nonaktif (INACTIVE)</option>
+            <option value="LOCKED">Terkunci (LOCKED)</option>
+          </select>
 
-        <button
-          type="submit"
-          className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
-        >
-          Cari
-        </button>
-      </form>
+          <Button type="submit" variant="default" size="sm" className="w-full sm:w-auto font-medium">
+            <Search className="w-4 h-4 mr-1.5" />
+            Cari
+          </Button>
+        </form>
+      </Card>
 
       {/* Tabel Pengguna */}
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b bg-muted/40 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              <tr>
-                <th className="p-4">Nama</th>
-                <th className="p-4">Email</th>
-                <th className="p-4">Peran (Roles)</th>
-                <th className="p-4">Status Akun</th>
-                <th className="p-4">Terdaftar</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {items.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                    Tidak ada pengguna yang ditemukan.
-                  </td>
-                </tr>
-              ) : (
-                items.map((user) => (
-                  <tr key={user.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="p-4 font-semibold">{user.name}</td>
-                    <td className="p-4 text-muted-foreground">{user.email}</td>
-                    <td className="p-4">
-                      <div className="flex flex-wrap gap-1">
-                        {user.userRoles.length === 0 ? (
-                          <span className="text-xs text-muted-foreground italic">Tanpa Peran</span>
-                        ) : (
-                          user.userRoles.map((ur) => (
-                            <span key={ur.roleId} className="inline-flex items-center rounded-md border bg-secondary px-2 py-0.5 text-xs font-semibold">
-                              {ur.role.name}
-                            </span>
-                          ))
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusBadgeMap[user.status]}`}>
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="p-4 text-xs text-muted-foreground">
-                      {new Date(user.createdAt).toLocaleDateString('id-ID')}
-                    </td>
+      <Card variant="default" className="overflow-hidden">
+        <CardContent className="p-0">
+          {items.length === 0 ? (
+            <EmptyState
+              title="Tidak Ada Pengguna"
+              description="Tidak ada data pengguna yang sesuai dengan kriteria pencarian atau status akun."
+              actionLabel="Reset Pencarian"
+              actionHref="/dashboard/users"
+              className="py-16 border-0 bg-transparent"
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm table-modern">
+                <thead>
+                  <tr>
+                    <th>Pengguna</th>
+                    <th>Email</th>
+                    <th>Peran (Roles)</th>
+                    <th>Status Akun</th>
+                    <th>Terdaftar</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </thead>
+                <tbody>
+                  {items.map((user) => (
+                    <tr key={user.id}>
+                      <td className="flex items-center gap-3">
+                        <Avatar name={user.name} size="sm" />
+                        <span className="font-semibold text-foreground">{user.name}</span>
+                      </td>
+                      <td className="text-muted-foreground font-mono text-xs">{user.email}</td>
+                      <td>
+                        <div className="flex flex-wrap gap-1">
+                          {user.userRoles.length === 0 ? (
+                            <span className="text-xs text-muted-foreground italic">Tanpa Peran</span>
+                          ) : (
+                            user.userRoles.map((ur) => (
+                              <Badge key={ur.roleId} variant="secondary" size="sm">
+                                {ur.role.name}
+                              </Badge>
+                            ))
+                          )}
+                        </div>
+                      </td>
+                      <td>{getStatusBadge(user.status)}</td>
+                      <td className="text-xs text-muted-foreground">
+                        {new Date(user.createdAt).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Pagination */}
       {meta.totalPages > 1 && (
         <div className="flex items-center justify-between text-xs pt-2">
           <p className="text-muted-foreground">
-            Halaman {meta.currentPage} dari {meta.totalPages} ({meta.totalItems} User)
+            Halaman <span className="font-semibold text-foreground">{meta.currentPage}</span> dari{' '}
+            <span className="font-semibold text-foreground">{meta.totalPages}</span> ({meta.totalItems} Total User)
           </p>
           <div className="flex gap-2">
             {meta.currentPage > 1 && (
               <Link
                 href={`/dashboard/users?page=${meta.currentPage - 1}${search ? `&search=${search}` : ''}`}
-                className="px-3 py-1 rounded border bg-background hover:bg-muted"
               >
-                Sebelumnya
+                <Button variant="outline" size="sm" className="font-medium">
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Sebelumnya
+                </Button>
               </Link>
             )}
             {meta.currentPage < meta.totalPages && (
               <Link
                 href={`/dashboard/users?page=${meta.currentPage + 1}${search ? `&search=${search}` : ''}`}
-                className="px-3 py-1 rounded border bg-background hover:bg-muted"
               >
-                Berikutnya
+                <Button variant="outline" size="sm" className="font-medium">
+                  Selanjutnya
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
               </Link>
             )}
           </div>

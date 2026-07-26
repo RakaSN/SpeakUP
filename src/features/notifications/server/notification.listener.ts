@@ -1,18 +1,15 @@
 import { eventBus } from '@/shared/events/event-bus';
 import { db } from '@/shared/server/db';
 import { appLogger } from '@/shared/server/logger/app.logger';
+import { NotificationDispatcher } from './notification-dispatcher';
 
 export function registerNotificationListeners() {
   // Listener saat tiket baru dibuat
   eventBus.subscribe('TICKET_CREATED', async (event) => {
     try {
-      await db.notification.create({
-        data: {
-          userId: event.payload.reporterId,
-          type: 'INFO',
-          title: 'Tiket Berhasil Dibuat',
-          message: `Tiket Anda telah diterima oleh sistem dan sedang menunggu peninjauan.`,
-        },
+      await NotificationDispatcher.dispatch({
+        notificationCode: 'TICKET_CREATED',
+        recipientIds: [event.payload.reporterId],
       });
     } catch (err) {
       appLogger.error('[NotificationListener] Failed to handle TICKET_CREATED', err);
@@ -22,13 +19,9 @@ export function registerNotificationListeners() {
   // Listener saat tiket didisposisikan ke petugas
   eventBus.subscribe('TICKET_ASSIGNED', async (event) => {
     try {
-      await db.notification.create({
-        data: {
-          userId: event.payload.assigneeId,
-          type: 'INFO',
-          title: 'Penugasan Tiket Baru',
-          message: `Anda telah ditugaskan untuk menangani sebuah tiket baru.`,
-        },
+      await NotificationDispatcher.dispatch({
+        notificationCode: 'TICKET_ASSIGNED',
+        recipientIds: [event.payload.assigneeId],
       });
     } catch (err) {
       appLogger.error('[NotificationListener] Failed to handle TICKET_ASSIGNED', err);
@@ -44,13 +37,13 @@ export function registerNotificationListeners() {
       });
 
       if (ticket) {
-        await db.notification.create({
-          data: {
-            userId: ticket.reporterId,
-            type: 'INFO',
-            title: `Status Tiket #${ticket.ticketNumber} Berubah`,
-            message: `Status tiket Anda telah diperbarui menjadi ${event.payload.newStatus}.`,
+        await NotificationDispatcher.dispatch({
+          notificationCode: 'TICKET_STATUS_CHANGED',
+          variables: {
+            ticketNumber: ticket.ticketNumber,
+            newStatus: event.payload.newStatus,
           },
+          recipientIds: [ticket.reporterId],
         });
       }
     } catch (err) {
@@ -58,3 +51,4 @@ export function registerNotificationListeners() {
     }
   });
 }
+

@@ -1,4 +1,16 @@
 import { MasterDataService } from '@/features/master-data/server/master-data.service';
+import {
+  PageHeader,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Button,
+  Badge,
+  Input,
+} from '@/components/ui';
+import { FileDown } from 'lucide-react';
 
 type SelectOption = { id: string; name: string };
 
@@ -9,77 +21,85 @@ export default async function ReportsExportPage() {
   ]);
 
   return (
-    <div className="space-y-6 max-w-2xl py-4">
-      <div className="border-b pb-4">
-        <h1 className="text-2xl font-bold tracking-tight">Pusat Laporan & Ekspor Data</h1>
-        <p className="text-sm text-muted-foreground">Unduh rekapitulasi data tiket dalam format Excel / CSV berdasarkan periode tanggal dan filter.</p>
-      </div>
+    <div className="space-y-6 max-w-3xl py-4 animate-fade-in">
+      <PageHeader
+        title="Pusat Laporan & Ekspor Data"
+        description="Unduh rekapitulasi data pengaduan sekolah dalam format Excel / CSV sesuai hak akses eksekutif."
+        badge={<Badge variant="info">SDS v1.0 Export</Badge>}
+      />
 
-      <div className="rounded-xl border bg-card p-6 shadow-sm space-y-6">
-        <h3 className="text-lg font-semibold border-b pb-2">Filter Ekspor Laporan</h3>
-
-        <form action="/api/reports/export" method="GET" className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none" htmlFor="startDate">Tanggal Mulai</label>
-              <input
+      <Card variant="default">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FileDown className="w-4 h-4 text-primary" />
+            Filter Ekspor Laporan Resmi
+          </CardTitle>
+          <CardDescription>Tentukan rentang tanggal dan parameter pengaduan yang ingin diunduh</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action="/api/reports/export" method="GET" className="space-y-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Input
                 type="date"
                 id="startDate"
                 name="startDate"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                label="Tanggal Mulai"
               />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none" htmlFor="endDate">Tanggal Sampai</label>
-              <input
+              <Input
                 type="date"
                 id="endDate"
                 name="endDate"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                label="Tanggal Sampai"
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none" htmlFor="categoryId">Kategori Tiket</label>
-              <select
-                id="categoryId"
-                name="categoryId"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="">Semua Kategori</option>
-                {categories.map((c: SelectOption) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-foreground" htmlFor="categoryId">
+                  Kategori Pengaduan
+                </label>
+                <select
+                  id="categoryId"
+                  name="categoryId"
+                  className="w-full rounded-lg border border-input bg-surface px-3 py-2 text-sm text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="">Semua Kategori</option>
+                  {categories.map((c: SelectOption) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-foreground" htmlFor="statusId">
+                  Status Alur Tiket
+                </label>
+                <select
+                  id="statusId"
+                  name="statusId"
+                  className="w-full rounded-lg border border-input bg-surface px-3 py-2 text-sm text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="">Semua Status</option>
+                  {statuses.map((s: SelectOption) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none" htmlFor="statusId">Status Tiket</label>
-              <select
-                id="statusId"
-                name="statusId"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="">Semua Status</option>
-                {statuses.map((s: SelectOption) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
+            <div className="pt-4 border-t border-border/60 flex justify-end">
+              <Button type="submit" variant="default" className="px-6 font-semibold">
+                <FileDown className="w-4 h-4 mr-1.5" />
+                Unduh Laporan (.csv)
+              </Button>
             </div>
-          </div>
-
-          <div className="pt-4 border-t flex justify-end">
-            <button
-              type="submit"
-              className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
-            >
-              📥 Ekspor ke Excel (.csv)
-            </button>
-          </div>
-        </form>
-      </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
